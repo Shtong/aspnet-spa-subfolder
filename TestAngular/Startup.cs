@@ -20,6 +20,9 @@ namespace TestAngular
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
+            // Not necessary if you do not plan to use razor pages
+            services.AddRazorPages();
+
             // In production, the Angular files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
             {
@@ -45,7 +48,10 @@ namespace TestAngular
             app.UseStaticFiles();
             if (!env.IsDevelopment())
             {
-                app.UseSpaStaticFiles();
+                app.UseSpaStaticFiles(new StaticFileOptions
+                {
+                    RequestPath = "/spa"
+                });
             }
 
             app.UseRouting();
@@ -55,19 +61,26 @@ namespace TestAngular
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller}/{action=Index}/{id?}");
+
+                // Not necessary if you do not plan on using Razor Pages
+                endpoints.MapRazorPages();
             });
 
-            app.UseSpa(spa =>
+            // Register the SPA in the /spa path
+            app.Map("/spa", spaFolder =>
             {
-                // To learn more about options for serving an Angular SPA from ASP.NET Core,
-                // see https://go.microsoft.com/fwlink/?linkid=864501
-
-                spa.Options.SourcePath = "ClientApp";
-
-                if (env.IsDevelopment())
+                spaFolder.UseSpa(spa =>
                 {
-                    spa.UseAngularCliServer(npmScript: "start");
-                }
+                    // To learn more about options for serving an Angular SPA from ASP.NET Core,
+                    // see https://go.microsoft.com/fwlink/?linkid=864501
+
+                    spa.Options.SourcePath = "ClientApp";
+
+                    if (env.IsDevelopment())
+                    {
+                        spa.UseAngularCliServer(npmScript: "start");
+                    }
+                });
             });
         }
     }
